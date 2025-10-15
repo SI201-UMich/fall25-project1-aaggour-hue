@@ -81,3 +81,66 @@ def calculate_average_body_mass_species(penguins):
     print(f"The average mass for (island, species) is: {avg_body_mass_dict}")
     print(f"The species with the highest average mass is: {heaviest_species_island} with a mass of {highest_avg_mass:.2f}g") 
     return avg_body_mass_dict, heaviest_species_island, highest_avg_mass
+
+
+def calculate_body_flipper_to_mass_ratio(penguins, avg_body_mass_dict):
+    '''
+    Calculates the flipper-to-average-mass ratio for each penguin (using the above function avg mass) and then using that output, find the sex with the highest flipper-to-average-mass ratio
+    Input: penguins (list of dicts) and avg_body_mass_dict (dictionary)
+    Output: penguins_with_ratio and sex_highest_ratio
+    '''
+    penguins_with_ratio = []
+
+    for penguin in penguins:
+        island = penguin["island"]
+        species = penguin["species"]
+
+        if (island, species) not in avg_body_mass_dict:
+            continue
+
+        avg_mass = avg_body_mass_dict[(island, species)]
+
+        if penguin["flipper_length_mm"] is not None:
+            flipper_length = penguin["flipper_length_mm"]
+            ratio = flipper_length / avg_mass
+            penguin["ratio"] = ratio
+            penguins_with_ratio.append(penguin)
+
+
+    results_dict = {}
+    for (island, species) in avg_body_mass_dict.keys():
+        male_ratios = []
+        female_ratios = []
+
+        for penguin in penguins_with_ratio:
+            if penguin["species"] == species and "sex" in penguin:
+                if penguin["sex"] == "male":
+                    male_ratios.append(penguin["ratio"])
+                elif penguin["sex"] == "female":
+                    female_ratios.append(penguin["ratio"])
+
+        if len(male_ratios) > 0:
+            male_avg = sum(male_ratios) / len(male_ratios)
+        else:
+            male_avg = None
+        if len(female_ratios) > 0:
+            female_avg = sum(female_ratios) / len(female_ratios)
+        else:
+            female_avg = None
+        if male_avg is not None and female_avg is not None:
+            if male_avg > female_avg:
+                results_dict[species] = "male"
+            else:
+                results_dict[species] = "female"
+        elif male_avg is not None:
+            results_dict[species] = "male"
+        elif female_avg is not None:
+            results_dict[species] = "female"
+        else:
+            results_dict[species] = "unknown"  # No data for either sex
+            
+        print(f"Sex with highest flipper-to-mass ratio: {results_dict[species]}")
+
+    print("\nFinal results (species: sex):", results_dict)
+
+    return results_dict
